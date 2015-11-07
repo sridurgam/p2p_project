@@ -20,7 +20,7 @@ public class Client {
 			byte [] byteArray = new byte [FILE_SIZE];
 			inStream = (FileInputStream)socket.getInputStream();
 			
-			fOutStream = new FileOutputStream("TransferDoc.pdf");
+			fOutStream = new FileOutputStream("TransferDocCombined.txt");
 			bOutStream = new BufferedOutputStream(fOutStream);
 			bytesRead = inStream.read(byteArray, 0, byteArray.length);
 			current = bytesRead;
@@ -34,7 +34,7 @@ public class Client {
 			bOutStream.write(byteArray, 0, current);
 			bOutStream.flush();
 			
-			System.out.println("File transfer complete!");
+			System.out.println("File transfer completed!");
 			
 		}finally{
 			if (bOutStream != null){

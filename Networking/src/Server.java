@@ -1,3 +1,7 @@
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -43,7 +47,25 @@ public class Server implements Runnable{
 	}
 	
 	private void chunkInputFile(){
-		
+		File file = new File(System.getProperty("user.dir") + "/src/TransferDoc.txt");
+		int chunkId = 0;
+		int chunkSize = 100000;
+		byte[] buffer = new byte[chunkSize];
+		try{
+			BufferedInputStream bf = new BufferedInputStream(new FileInputStream(file));
+			int temp =0;
+			while((temp = bf.read(buffer)) >0)
+					{
+						File newFile = new File(System.getProperty("user.dir"), "chunk" + String.format("%d", chunkId++)+".txt");
+						FileOutputStream fout = new FileOutputStream(newFile);
+						fout.write(buffer,0, temp);
+						fout.close();
+					}
+			bf.close();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 	
 	private synchronized boolean isStopped()
@@ -66,7 +88,7 @@ public class Server implements Runnable{
         try {
             this.serverSocket = new ServerSocket(this.serverPort);
         } catch (IOException e) {
-            throw new RuntimeException("Cannot open port"+this.serverPort, e);
+            throw new RuntimeException("Cannot open server port"+this.serverPort, e);
         }
     }
 	
