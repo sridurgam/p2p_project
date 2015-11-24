@@ -47,16 +47,18 @@ public class Server implements Runnable{
 	}
 	
 	private void chunkInputFile(){
-		File file = new File(System.getProperty("user.dir") + "/src/TransferDoc.txt");
+		File file = new File(System.getProperty("user.dir") + "/src/"+this.fileName);
 		int chunkId = 0;
 		int chunkSize = 100000;
 		byte[] buffer = new byte[chunkSize];
 		try{
 			BufferedInputStream bf = new BufferedInputStream(new FileInputStream(file));
 			int temp =0;
-			while((temp = bf.read(buffer)) >0)
+			while((temp = bf.read(buffer)) >=0)
 					{
-						File newFile = new File(System.getProperty("user.dir"), "chunk" + String.format("%d", chunkId++)+".txt");
+					    System.out.println(buffer[0]);
+					    System.out.println(buffer[temp-7]);
+						File newFile = new File(System.getProperty("user.dir"), "chunk" + String.format("%d", chunkId++)+".pdf");
 						FileOutputStream fout = new FileOutputStream(newFile);
 						fout.write(buffer,0, temp);
 						fout.close();
@@ -65,6 +67,9 @@ public class Server implements Runnable{
 		}
 		catch(Exception e){
 			e.printStackTrace();
+		}
+		finally{
+			
 		}
 	}
 	

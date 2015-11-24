@@ -21,9 +21,9 @@ public class WorkerRunnable implements Runnable{
     public void run() {
     	try{
 	    	try {	
-	    		for(int i=0;i<3;i++)
+	    		for(int i=0;i<=0;i++)
 	    		{
-	    			File fileChunk = new File("chunk"+i+".txt");
+	    			File fileChunk = new File("chunk"+i+".pdf");
 		        	byte [] byteArray = new byte[(int)fileChunk.length()];
 					fInStream = new FileInputStream(fileChunk);
 					bInStream = new BufferedInputStream(fInStream);
@@ -37,6 +37,7 @@ public class WorkerRunnable implements Runnable{
 					System.out.println("Chunk transfer completed for "+"Chunk "+i);
 					System.out.println("Transferred " + fileChunk.length() + " bytes for chunk "+i);
 	    		}
+	    		
 	        } finally {
 				if (bInStream!=null){
 					bInStream.close();
