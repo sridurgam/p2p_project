@@ -1,14 +1,11 @@
 import java.io.*;
 import java.net.*;
-import java.nio.charset.Charset;
 
 public class Client {
 	public final static int FILE_SIZE =7000000;
 	
 	public void createPeers() throws UnknownHostException, IOException{
 		int bytesRead;
-		int current = 0;
-		
 		FileOutputStream fOutStream = null;
 		BufferedOutputStream bOutStream = null;
 		FileInputStream inStream = null;
@@ -23,18 +20,15 @@ public class Client {
 			
 			fOutStream = new FileOutputStream(new File("TransferDocCombined.pdf"));
 			bOutStream = new BufferedOutputStream(fOutStream);
-			//bytesRead = inStream.read(byteArray, 0, byteArray.length);		
-			//current = bytesRead;
 			
 			do{
 				bytesRead = inStream.read(byteArray,0, byteArray.length);
-				if (bytesRead > -1){
-					current = current+bytesRead;
+				if (bytesRead > -1)
+				{
+					bOutStream.write(byteArray, 0, bytesRead);
+					bOutStream.flush();
 				}
 			}while(bytesRead > -1);
-			bOutStream.write(byteArray, 0, current);
-			bOutStream.flush();
-			
 			System.out.println("File transfer completed!");
 			
 		}finally{
@@ -53,7 +47,7 @@ public class Client {
 		Client peer1 = new Client();
 		peer1.createPeers();
 		
-		//Client peer2 = new Client();
-		//peer2.createPeers();
+		Client peer2 = new Client();
+		peer2.createPeers();
 	}
 }

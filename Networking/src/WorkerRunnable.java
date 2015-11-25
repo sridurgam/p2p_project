@@ -21,19 +21,18 @@ public class WorkerRunnable implements Runnable{
     public void run() {
     	try{
 	    	try {	
-	    		for(int i=0;i<=0;i++)
+	    		for(int i=0;i<4;i++)
 	    		{
 	    			File fileChunk = new File("chunk"+i+".pdf");
 		        	byte [] byteArray = new byte[(int)fileChunk.length()];
+		        	System.out.println("Chunk "+i+" "+fileChunk.length());
 					fInStream = new FileInputStream(fileChunk);
 					bInStream = new BufferedInputStream(fInStream);
 					bInStream.read(byteArray, 0, byteArray.length);
-					
 					outStream = (FileOutputStream)serverSocket.getOutputStream();
 					System.out.println("Sending chunk "+i);
 					outStream.write(byteArray, 0, byteArray.length);
 					outStream.flush();
-					
 					System.out.println("Chunk transfer completed for "+"Chunk "+i);
 					System.out.println("Transferred " + fileChunk.length() + " bytes for chunk "+i);
 	    		}
