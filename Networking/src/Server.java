@@ -1,7 +1,10 @@
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,10 +16,35 @@ public class Server implements Runnable{
     protected boolean      isStopped    = false;
     protected Thread       runningThread;
     protected String       fileName;
+    protected int[][]      Neighbors;
     
 	public Server(int port)
 	{
 		this.serverPort = port;
+	}
+	public void populateNeighbors() throws FileNotFoundException{
+		File configFile = new File("config.txt");
+		
+		BufferedReader configReader = new BufferedReader(new FileReader(configFile));
+		Neighbors = new int[5][3];
+		try{
+			for (int i = 0; i < 5; i++){
+				String[] NextLine = configReader.readLine().split(" ");
+				int id1 = Integer.parseInt(NextLine[0]);
+				int id2 = Integer.parseInt(NextLine[1]);
+				int id3 = Integer.parseInt(NextLine[2]);
+				Neighbors[id1-1][0] = id2;
+				Neighbors[id1-1][1] = id3;
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				configReader.close();
+			} catch(Exception e) {
+				e.printStackTrace();
+			} 
+		}
 	}
 	public void run()
 	{
@@ -26,6 +54,11 @@ public class Server implements Runnable{
 		
         openServerSocket();
         chunkInputFile();
+        try {
+			populateNeighbors();
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		}
         
         while(!isStopped()){
             Socket clientSocket = null;
