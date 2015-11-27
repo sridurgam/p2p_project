@@ -2,7 +2,10 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.net.Socket;
+import java.util.Scanner;
+import java.io.PrintWriter;
 
 public class WorkerRunnable implements Runnable{
 
@@ -11,16 +14,27 @@ public class WorkerRunnable implements Runnable{
 	protected BufferedInputStream bInStream = null;
 	protected FileOutputStream outStream = null;
 	protected File file = null;
+	protected PrintWriter pWriter= null;
+	protected InputStream inStream= null;
+	protected int[][] Neighbors= new int[5][3];
 
-	public WorkerRunnable(Socket serverSocket, int chunkNum) {
+	public WorkerRunnable(Socket serverSocket, int chunkNum, int[][] Neighbors) {
         this.serverSocket = serverSocket;
-       // this.file = new File(System.getProperty("user.dir") + "/src/TransferDoc.txt");
-       // System.out.println(this.file);
+        this.Neighbors = Neighbors;
     }
 
     public void run() {
     	try{
-	    	try {	
+	    	try {
+	    		pWriter = new PrintWriter(serverSocket.getOutputStream(), true);
+	    		inStream = serverSocket.getInputStream();
+	    		
+	    		Scanner inScanner = new Scanner(inStream);
+	    		int ID = Integer.parseInt(inScanner.nextLine());
+	    		
+	    		pWriter.println(Neighbors[ID-1][0]);
+	    		pWriter.println(Neighbors[ID-1][0]);
+	    			    		
 	    		for(int i=0;i<4;i++)
 	    		{
 	    			File fileChunk = new File("chunk"+i+".pdf");
@@ -36,7 +50,7 @@ public class WorkerRunnable implements Runnable{
 					System.out.println("Chunk transfer completed for "+"Chunk "+i);
 					System.out.println("Transferred " + fileChunk.length() + " bytes for chunk "+i);
 	    		}
-	    		
+	    		inScanner.close();
 	        } finally {
 				if (bInStream!=null){
 					bInStream.close();
@@ -49,6 +63,12 @@ public class WorkerRunnable implements Runnable{
 				}
 				if (serverSocket != null){
 					serverSocket.close();
+				}
+				if (inStream != null){
+					inStream.close();
+				}
+				if (pWriter != null){
+					pWriter.close();
 				}
 			}
         } catch (Exception e){

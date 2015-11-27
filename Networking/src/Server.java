@@ -17,6 +17,7 @@ public class Server implements Runnable{
     protected Thread       runningThread;
     protected String       fileName;
     protected int[][]      Neighbors;
+
     
 	public Server(int port)
 	{
@@ -73,7 +74,7 @@ public class Server implements Runnable{
                     "Error accepting client connection", e);
             }
             new Thread(
-                new WorkerRunnable(clientSocket, 1)
+                new WorkerRunnable(clientSocket, 1, Neighbors)
             ).start();
         }
         System.out.println("Server Stopped.") ;

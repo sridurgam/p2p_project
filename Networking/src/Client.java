@@ -1,28 +1,42 @@
 import java.io.*;
 import java.net.*;
+import java.util.Scanner;
 
 public class Client {
 	public final static int FILE_SIZE =7000000;
+	protected int upNeighbor;
+	protected int downNeighbor;
 	
 	public void createPeers() throws UnknownHostException, IOException{
 		int bytesRead;
 		FileOutputStream fOutStream = null;
 		BufferedOutputStream bOutStream = null;
-		FileInputStream inStream = null;
+		FileInputStream finStream = null;
 		Socket socket = null;
+		InputStream inStream = null;
+		PrintWriter pWriter = null;
 		
 		try{
 			socket = new Socket("127.0.0.1", 8081);
 			System.out.println("Connected to server!");
 			
 			byte [] byteArray = new byte [FILE_SIZE];
-			inStream = (FileInputStream)socket.getInputStream();
+						
+			pWriter = new PrintWriter(socket.getOutputStream(), true);
+			inStream = socket.getInputStream();
 			
+			pWriter.println("1");
+			
+			Scanner inScanner = new Scanner(inStream);
+			upNeighbor = Integer.parseInt(inScanner.nextLine());
+			downNeighbor = Integer.parseInt(inScanner.nextLine());
+			
+			finStream = (FileInputStream)inStream;
 			fOutStream = new FileOutputStream(new File("TransferDocCombined.pdf"));
 			bOutStream = new BufferedOutputStream(fOutStream);
 			
 			do{
-				bytesRead = inStream.read(byteArray,0, byteArray.length);
+				bytesRead = finStream.read(byteArray,0, byteArray.length);
 				if (bytesRead > -1)
 				{
 					bOutStream.write(byteArray, 0, bytesRead);
@@ -30,7 +44,7 @@ public class Client {
 				}
 			}while(bytesRead > -1);
 			System.out.println("File transfer completed!");
-			
+			inScanner.close();
 		}finally{
 			if (bOutStream != null){
 				bOutStream.close();
@@ -40,6 +54,12 @@ public class Client {
 			}
 			if (socket != null){
 				socket.close();
+			}
+			if (inStream != null){
+				inStream.close();
+			}
+			if (pWriter != null){
+				pWriter.close();
 			}
 		}
 	}
