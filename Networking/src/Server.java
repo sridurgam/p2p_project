@@ -34,8 +34,8 @@ public class Server implements Runnable{
 				int id1 = Integer.parseInt(NextLine[0]);
 				int id2 = Integer.parseInt(NextLine[1]);
 				int id3 = Integer.parseInt(NextLine[2]);
-				Neighbors[id1-1][0] = id2;
-				Neighbors[id1-1][1] = id3;
+				Neighbors[id1-8091][0] = id2;
+				Neighbors[id1-8091][1] = id3;
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -142,7 +142,7 @@ public class Server implements Runnable{
 		
 		new Thread(server).start();
 		try {
-		    Thread.sleep(20 * 10000);
+		    Thread.sleep(20 * 100000);
 		} catch (InterruptedException e) {
 		    e.printStackTrace();
 		}

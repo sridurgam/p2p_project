@@ -2,7 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.util.Scanner;
 
-public class Client implements Runnable{
+public class Client2 implements Runnable{
 	public final static int FILE_SIZE =7000000;
 	protected int upNeighbor;
 	protected int downNeighbor;
@@ -11,7 +11,7 @@ public class Client implements Runnable{
 	protected ServerSocket serverSocket;
 	protected int serverPort;
 	
-	public Client(int serverPort){
+	public Client2(int serverPort){
 		this.serverPort = serverPort;
 	}
 	public void run()
@@ -22,34 +22,58 @@ public class Client implements Runnable{
             this.runningThread = Thread.currentThread();
         }
 		try{
-		this.getServerChunks();
-        openPeerServerSocket();   
-        while(!isStopped()){
+			this.getServerChunks();
+	        openPeerServerSocket();   
+	        while(!isStopped()){
             try 
             {
-            	System.out.println("In peer server socket!!");
                 uploadNeighbourSocket = this.serverSocket.accept();
-            } catch (IOException e) {
-                if(isStopped()) {
+            } 
+            catch (IOException e) 
+            {
+                if(isStopped()) 
+                {
                     System.out.println("Peer1 Server Stopped.") ;
                     return;
                 }
-                throw new RuntimeException(
-                    "Error accepting uploadNeighbour request connection", e);
+                throw new RuntimeException("Error accepting uploadNeighbour request connection", e);
             }
-            System.out.println("HERE");
             new Thread(
-                new UploadNeighbourRunnable(uploadNeighbourSocket,this.serverPort)/*total_chunks - num_chunks_from_server*/
+                new UploadNeighbourRunnable(uploadNeighbourSocket,this.serverPort)
             ).start();
             //Connect to download neighbour and query the chunks not yet present
-             downloadNeighbourSocket = new Socket("127.0.0.1",8092);
-            
-        }
+            System.out.println("Here in peer2");
+            downloadNeighbourSocket = new Socket("127.0.0.1",8091);
+            DataOutputStream out = new DataOutputStream(downloadNeighbourSocket.getOutputStream());
+            out.writeInt(2);
+            for(int i = 0; i < 2; i++) 
+            {
+                  out.writeInt(i);
+            }
+            for(int i = 0; i < 2; i++) 
+            {
+	            FileInputStream finStream = (FileInputStream)downloadNeighbourSocket.getInputStream();
+	            FileOutputStream fOutStream = new FileOutputStream(new File(System.getProperty("user.dir") + "/src/peer"+ this.serverPort +"/"+"chunk"+ i + ".pdf"));
+				BufferedOutputStream bOutStream = new BufferedOutputStream(fOutStream);
+				int bytesRead;
+				byte[] byteArray = new byte[FILE_SIZE];
+				do{
+					bytesRead = finStream.read(byteArray,0, byteArray.length);
+					if (bytesRead > -1)
+					{
+						bOutStream.write(byteArray, 0, bytesRead);
+						bOutStream.flush();
+					}
+				}while(bytesRead > -1);
+				System.out.println("File transfer completed!");
+		        bOutStream.close();
+            }
         if(downloadNeighbourSocket != null)
 		{
 			downloadNeighbourSocket.close();
-		}   
+		}  
         }
+		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
@@ -75,7 +99,7 @@ public class Client implements Runnable{
 			pWriter = new PrintWriter(socket.getOutputStream(), true);
 			inStream = socket.getInputStream();
 			
-			pWriter.println("8091");
+			pWriter.println("8092");
 			
 			Scanner inScanner = new Scanner(inStream);
 			upNeighbor = Integer.parseInt(inScanner.nextLine());
@@ -121,7 +145,6 @@ public class Client implements Runnable{
 	}
 	private void openPeerServerSocket()
 	{
-		System.out.println("In peer server socket!!");
         try {
             this.serverSocket = new ServerSocket(this.serverPort);
         } catch (IOException e) {
@@ -138,12 +161,12 @@ public class Client implements Runnable{
         try {
             this.serverSocket.close();
         } catch (IOException e) {
-            throw new RuntimeException("Error closing peer "+this.serverPort, e);
+            throw new RuntimeException("Error closing client", e);
         }
     }
 	
 	public static void main(String args[]) throws UnknownHostException, IOException{
-		Client peer = new Client(8091);
+		Client2 peer = new Client2(8092);
 		//peer1.createPeers();
 		new Thread(peer).start();
 		try {

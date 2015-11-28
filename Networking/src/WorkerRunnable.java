@@ -32,10 +32,10 @@ public class WorkerRunnable implements Runnable{
 	    		Scanner inScanner = new Scanner(inStream);
 	    		int ID = Integer.parseInt(inScanner.nextLine());
 	    		
-	    		pWriter.println(Neighbors[ID-1][0]);
-	    		pWriter.println(Neighbors[ID-1][0]);
+	    		pWriter.println(Neighbors[ID-8090][0]);
+	    		pWriter.println(Neighbors[ID-8090][1]);
 	    			    		
-	    		for(int i=0;i<4;i++)
+	    		for(int i=0;i<2;i++)
 	    		{
 	    			File fileChunk = new File("chunk"+i+".pdf");
 		        	byte [] byteArray = new byte[(int)fileChunk.length()];
