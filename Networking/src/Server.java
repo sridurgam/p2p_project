@@ -11,22 +11,22 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class Server implements Runnable{
-	protected int          serverPort;
+	protected int serverPort;
     protected ServerSocket serverSocket;
-    protected boolean      isStopped    = false;
-    protected Thread       runningThread;
-    protected String       fileName;
-    protected int[][]      Neighbors;
-
+    protected boolean isStopped = false;
+    protected Thread runningThread;
+    protected String fileName;
+    protected int[][] Neighbors;
+    protected int chunkNum;
     
-	public Server(int port)
-	{
+	public Server(int port)	{
 		this.serverPort = port;
 	}
+	
 	public void populateNeighbors() throws FileNotFoundException{
 		File configFile = new File("config.txt");
-		
 		BufferedReader configReader = new BufferedReader(new FileReader(configFile));
+		
 		Neighbors = new int[5][3];
 		try{
 			for (int i = 0; i < 5; i++){
@@ -47,14 +47,15 @@ public class Server implements Runnable{
 			} 
 		}
 	}
-	public void run()
-	{
+	
+	public void run(){
 		synchronized(this){
             this.runningThread = Thread.currentThread();
         }
 		
         openServerSocket();
         chunkInputFile();
+        
         try {
 			populateNeighbors();
 		} catch (FileNotFoundException e1) {
@@ -74,7 +75,7 @@ public class Server implements Runnable{
                     "Error accepting client connection", e);
             }
             new Thread(
-                new WorkerRunnable(clientSocket, 1, Neighbors)
+                new WorkerRunnable(clientSocket, chunkNum, Neighbors)
             ).start();
         }
         System.out.println("Server Stopped.") ;
@@ -82,7 +83,7 @@ public class Server implements Runnable{
 	
 	private void chunkInputFile(){
 		File file = new File(System.getProperty("user.dir") + "/src/"+this.fileName);
-		int chunkId = 0;
+		chunkNum = 0;
 		int chunkSize = 100000;
 		byte[] buffer = new byte[chunkSize];
 		try{
@@ -92,7 +93,7 @@ public class Server implements Runnable{
 					{
 					    System.out.println(buffer[0]);
 					    System.out.println(buffer[temp-7]);
-						File newFile = new File(System.getProperty("user.dir"), "chunk" + String.format("%d", chunkId++)+".pdf");
+						File newFile = new File(System.getProperty("user.dir"), "chunk" + String.format("%d", chunkNum++)+".pdf");
 						FileOutputStream fout = new FileOutputStream(newFile);
 						fout.write(buffer,0, temp);
 						fout.close();
@@ -107,13 +108,11 @@ public class Server implements Runnable{
 		}
 	}
 	
-	private synchronized boolean isStopped()
-	{
+	private synchronized boolean isStopped(){
 	        return this.isStopped;
 	}
 	
-	public synchronized void stop()
-	{
+	public synchronized void stop(){
         this.isStopped = true;
         try {
             this.serverSocket.close();
@@ -122,8 +121,7 @@ public class Server implements Runnable{
         }
     }
 	
-	private void openServerSocket()
-	{
+	private void openServerSocket(){
         try {
             this.serverSocket = new ServerSocket(this.serverPort);
         } catch (IOException e) {
@@ -131,8 +129,7 @@ public class Server implements Runnable{
         }
     }
 	
-	public static void main(String args[]) throws IOException
-	{
+	public static void main(String args[]) throws IOException{
 		System.out.println("Provide the name of the file to be transferred: ");
 		Scanner inputScanner = new Scanner(System.in);
 		String fileName = inputScanner.nextLine();
