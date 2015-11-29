@@ -23,7 +23,9 @@ public class Client2 implements Runnable{
 	public void downloadNeighbourConnect() throws InterruptedException{
 		while(true){
 			try{
+				System.out.println("Attempting connection to download Neighbor");
 				downloadNeighbourSocket = new Socket("127.0.0.1", downNeighbor);
+				System.out.println("Connected to downloadNeighbor" + downNeighbor);
 				break;
 			} catch (Exception e){
 				Thread.sleep(3000);
@@ -39,7 +41,7 @@ public class Client2 implements Runnable{
 		try{
 			this.getServerChunks();
 	        
-/*	        new Thread(
+	        new Thread(
 	        		new UploadNeighbourRunnable(this.serverPort)
 	        ).start();
 	        
@@ -100,7 +102,7 @@ public class Client2 implements Runnable{
 	        }
 	        if(downloadNeighbourSocket != null){
 				downloadNeighbourSocket.close();
-			}*/
+			}
         }
 		catch(Exception e){
 			e.printStackTrace();
@@ -166,9 +168,15 @@ public class Client2 implements Runnable{
 				}while(currentRead < chunkSize);
 				
 				requestChunks[tempFileNum] = -1;
-				tempFileNum += 2;
+				tempFileNum += 5;
 				downloadedChunks++;
+				try
+				{
 				chunkSize = dInStream.readInt();
+				}
+				catch(Exception e){
+					chunkSize=-1;
+				}
 				System.out.println("chunkSizeRead : " + chunkSize);			
 			}
 		}

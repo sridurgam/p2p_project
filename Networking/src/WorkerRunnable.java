@@ -43,7 +43,7 @@ public class WorkerRunnable implements Runnable{
 	    		dOutStream.writeInt(Neighbors[ID][0]);
 	    		dOutStream.writeInt(Neighbors[ID][1]);
 	    			    		
-	    		for(int i=ID; i<ChunkNum; i = i + 2){
+	    		for(int i=ID; i<ChunkNum; i = i + 5){
 	    			File fileChunk = new File("chunk"+i+".pdf");
 	    			
 	    			dOutStream.writeInt((int)fileChunk.length());

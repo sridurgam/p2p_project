@@ -42,9 +42,10 @@ public class UploadNeighbourRunnable implements Runnable{
 	
 	public void transferChunks(int length_array,int[] request_chunks) throws FileNotFoundException,IOException{
 		for(int i=0;i<length_array;i++){
-			System.out.println(System.getProperty("user.dir") + "/src/" + peerId+ "/" + request_chunks[i]+".pdf");
-			File fileChunk = new File(System.getProperty("user.dir") + "/src/" + peerId + "/" + request_chunks[i]+".pdf");
+			System.out.println(System.getProperty("user.dir")+"/"+ peerId+ "/" + request_chunks[i]+".pdf");
+			File fileChunk = new File(System.getProperty("user.dir") + "/" + peerId + "/" + request_chunks[i]+".pdf");
 			if(fileChunk.exists() && !fileChunk.isDirectory()){ 
+				System.out.println("Sending chunks to upload neighbour");
 				byte [] byteArray = new byte[(int)fileChunk.length()];
 				
 				dOutStream.writeInt(request_chunks[i]);
@@ -68,12 +69,16 @@ public class UploadNeighbourRunnable implements Runnable{
 		dOutStream.writeInt(-1);
 	}
     public void run(){
-    	try{
+    	
+    	
+    		try{
     		openPeerServerSocket();
     		serverSocket = sSocket.accept();
+    		
     	} catch (Exception e){
     		e.printStackTrace();
     	}
+    	
     	try{
 	    	try{
 	    		inStream = serverSocket.getInputStream();
@@ -84,12 +89,12 @@ public class UploadNeighbourRunnable implements Runnable{
 	    		dOutStream = new DataOutputStream(outStream);
 	    		int length_array = dInStream.readInt();
 	    		
-	    		System.out.println(length_array);
+	    		System.out.println("Array Length "+length_array);
 	    		int [] request_chunks = new int[length_array];
 	    		for(int i = 0; i < length_array; i++) 
 	    		{
 	    		      request_chunks[i] = dInStream.readInt();	 
-	    		      System.out.println(request_chunks[i]);
+	    		      System.out.println("Request chunk "+request_chunks[i]);
 	    		}
 	    		this.transferChunks(length_array,request_chunks);
 	        } 
