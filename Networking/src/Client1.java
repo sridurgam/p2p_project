@@ -52,20 +52,22 @@ public class Client1 implements Runnable{
             
             InputStream downIn = downloadNeighbourSocket.getInputStream();
             DataInputStream downDataIn = new DataInputStream(downIn);
-	        
+        	
+            int request;
+            request = numChunks - downloadedChunks;
+            System.out.println(request);
+            downDataOut.writeInt(request);
+            
 	        while(!isStopped()){
-	        	int request;
-
-	            request = numChunks - downloadedChunks;
-	            System.out.println(request);
-	            downDataOut.writeInt(request);
-
-	            for(int i = 0; i < numChunks; i++) {
+	        	System.out.print("Requesting chunks " );
+	        	for(int i = 0; i < numChunks; i++) {
 	            	if(requestChunks[i] != -1){
 	            		downDataOut.writeInt(i);
+	            		System.out.print(requestChunks[i] + " "); 
 	            	}
 	            }
 
+	            System.out.print(" from downloadNeighbour \n");
 	            int tempFileNum = downDataIn.readInt();
 	            int dBytesRead = 0;
 	            byte[] dByteArray = new byte[FILE_SIZE];
@@ -91,10 +93,16 @@ public class Client1 implements Runnable{
 	    					downBOut.flush();
 	    				}
 	    			}while(currentRead < chunkSize);
-	    			
+	    			System.out.println("Downloaded chunk " + tempFileNum + " from download Neighbour");
 	    			downloadedChunks++;
 	    			
-	    			tempFileNum = downDataIn.readInt();
+	    			try
+	    			{
+	    				tempFileNum = downDataIn.readInt();
+	    			}
+	    			catch(Exception e){
+	    				tempFileNum = -1;
+	    			}
 	            }
 	            if(downloadedChunks == numChunks){
 	            	this.stop();
@@ -155,9 +163,7 @@ public class Client1 implements Runnable{
 				bOutStream = new BufferedOutputStream(fOutStream);
 								
 				int currentRead = 0;
-				
-				System.out.println("chunkSize for " + tempFileNum + " is: " + chunkSize);
-				
+								
 				do{
 					bytesRead = dInStream.read(byteArray, 0, byteArray.length);
 					if (bytesRead > -1){
@@ -176,8 +182,10 @@ public class Client1 implements Runnable{
 				}
 				catch(Exception e){
 					chunkSize=-1;
+					System.out.println("chunksize = " + chunkSize);
 				}
-				System.out.println("chunkSizeRead : " + chunkSize);			
+				System.out.println("Downloaded chunk" + tempFileNum + " from Server");
+				System.out.println("Downloaded " + downloadedChunks + "/" + numChunks + " chunks");
 			}
 		}
 		catch(Exception e)

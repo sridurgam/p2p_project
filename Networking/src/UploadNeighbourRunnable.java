@@ -40,9 +40,10 @@ public class UploadNeighbourRunnable implements Runnable{
         }
     }
 	
-	public void transferChunks(int length_array,int[] request_chunks) throws FileNotFoundException,IOException{
+	public int transferChunks(int length_array,int[] request_chunks) throws FileNotFoundException,IOException{
+		int transferred_chunks = 0;
 		for(int i=0;i<length_array;i++){
-			System.out.println(System.getProperty("user.dir")+"/"+ peerId+ "/" + request_chunks[i]+".pdf");
+//			System.out.println(System.getProperty("user.dir")+"/"+ peerId+ "/" + request_chunks[i]+".pdf");
 			File fileChunk = new File(System.getProperty("user.dir") + "/" + peerId + "/" + request_chunks[i]+".pdf");
 			if(fileChunk.exists() && !fileChunk.isDirectory()){ 
 				System.out.println("Sending chunks to upload neighbour");
@@ -57,28 +58,27 @@ public class UploadNeighbourRunnable implements Runnable{
 				bInStream.read(byteArray, 0, byteArray.length);
 				fOutStream = (FileOutputStream)outStream;
 				
-				System.out.println("Sending chunk "+i+" for peer"+this.peerId );
+//				System.out.println("Sending chunk "+i+" for peer"+this.peerId );
 				fOutStream.write(byteArray, 0, byteArray.length);
 				fOutStream.flush();
 				
-				System.out.println("Chunk transfer completed for "+"Chunk "+i+" for peer "+this.peerId);
-				System.out.println("Transferred " + fileChunk.length() + " bytes for chunk "+i+" for "+this.peerId);	
+//				System.out.println("Chunk transfer completed for "+"Chunk "+i+" for peer "+this.peerId);
+				transferred_chunks++;
+				System.out.println("Transferred " + fileChunk.length() + " bytes for chunk "+request_chunks[i]+" for "+this.peerId);	
 			}
 		}
-		System.out.println("Exited loop");
 		dOutStream.writeInt(-1);
+		return transferred_chunks;
 	}
     public void run(){
-    	
-    	
-    		try{
+    	int transferred_chunks;
+    	try{
     		openPeerServerSocket();
     		serverSocket = sSocket.accept();
     		
     	} catch (Exception e){
     		e.printStackTrace();
     	}
-    	
     	try{
 	    	try{
 	    		inStream = serverSocket.getInputStream();
@@ -87,16 +87,24 @@ public class UploadNeighbourRunnable implements Runnable{
 	    		//read array containing chunks requested
 	    		dInStream = new DataInputStream(inStream);
 	    		dOutStream = new DataOutputStream(outStream);
-	    		int length_array = dInStream.readInt();
+	    		this.chunksToTransfer = dInStream.readInt();
 	    		
-	    		System.out.println("Array Length "+length_array);
-	    		int [] request_chunks = new int[length_array];
-	    		for(int i = 0; i < length_array; i++) 
-	    		{
-	    		      request_chunks[i] = dInStream.readInt();	 
-	    		      System.out.println("Request chunk "+request_chunks[i]);
-	    		}
-	    		this.transferChunks(length_array,request_chunks);
+	    		System.out.println("Array Length "+this.chunksToTransfer + " peer:" + peerId);
+	        	while(true)
+	        	{
+		    		int [] request_chunks = new int[this.chunksToTransfer];
+		    		for(int i = 0; i < this.chunksToTransfer; i++) 
+		    		{
+		    		      request_chunks[i] = dInStream.readInt();	 
+		    		    //  System.out.println("Request chunk "+request_chunks[i]);
+		    		}
+		    		transferred_chunks = this.transferChunks(this.chunksToTransfer,request_chunks);
+		    		this.chunksToTransfer = this.chunksToTransfer - transferred_chunks;
+		    		if(this.chunksToTransfer == 0)
+		    		{
+		    			break;
+		    		}
+	        	}
 	        } 
 	    	catch(Exception e)
 	    	{
