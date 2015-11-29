@@ -2,7 +2,7 @@ import java.io.*;
 import java.net.*;
 
 public class Client2 implements Runnable{
-	public final static int FILE_SIZE = 7000000;
+	public final static int FILE_SIZE = 100000;
 	protected int upNeighbor;
 	protected int downNeighbor;
 	protected boolean isStopped = false;
@@ -20,6 +20,17 @@ public class Client2 implements Runnable{
 		this.serverPort = serverPort;
 	}
 	
+	public void downloadNeighbourConnect() throws InterruptedException{
+		while(true){
+			try{
+				downloadNeighbourSocket = new Socket("127.0.0.1", downNeighbor);
+				break;
+			} catch (Exception e){
+				Thread.sleep(3000);
+			}
+		}
+	}
+	
 	public void run(){		
 		synchronized(this){
             this.runningThread = Thread.currentThread();
@@ -27,44 +38,27 @@ public class Client2 implements Runnable{
 		
 		try{
 			this.getServerChunks();
-	        openPeerServerSocket();  
+	        
+/*	        new Thread(
+	        		new UploadNeighbourRunnable(this.serverPort)
+	        ).start();
+	        
+	        downloadNeighbourConnect();
+	        
+            OutputStream downOut = downloadNeighbourSocket.getOutputStream();
+            DataOutputStream downDataOut = new DataOutputStream(downOut);
+            
+            InputStream downIn = downloadNeighbourSocket.getInputStream();
+            DataInputStream downDataIn = new DataInputStream(downIn);
 	        
 	        while(!isStopped()){
-	            /*try 
-	            {
-	            	System.out.println("Starting server thread for client" + this.serverPort % 8090);
-	                uploadNeighbourSocket = this.serverSocket.accept();
-	            } catch (IOException e) {
-	                if(isStopped()) {
-	                    System.out.println("Client2 Server Stopped.") ;
-	                    return;
-	                }
-	                throw new RuntimeException(
-	                    "Error accepting uploadNeighbour request connection", e);
-	            }
-
-	            new Thread(
-	                new UploadNeighbourRunnable(uploadNeighbourSocket,this.serverPort)
-	            ).start();*/
-	            
-	            //Connect to download neighbor and query the chunks not yet present
-	            System.out.println("Here in peer2");
-	            downloadNeighbourSocket = new Socket("127.0.0.1", downNeighbor);
-
-	            OutputStream downOut = downloadNeighbourSocket.getOutputStream();
-	            DataOutputStream downDataOut = new DataOutputStream(downOut);
-	            
-	            InputStream downIn = downloadNeighbourSocket.getInputStream();
-	            DataInputStream downDataIn = new DataInputStream(downIn);
-	            
-	            int request;
+	        	int request;
 
 	            request = numChunks - downloadedChunks;
 	            System.out.println(request);
 	            downDataOut.writeInt(request);
 
 	            for(int i = 0; i < numChunks; i++) {
-	            	System.out.println("Request of " + i + " is " + requestChunks[i]);
 	            	if(requestChunks[i] != -1){
 	            		downDataOut.writeInt(i);
 	            	}
@@ -76,31 +70,29 @@ public class Client2 implements Runnable{
 	            FileInputStream downFIn = (FileInputStream)downIn;
 	            FileOutputStream downFOut;
 				BufferedOutputStream downBOut;
+				
 	            while(tempFileNum >= 0) {
 	    			int chunkSize = downDataIn.readInt();
-	    			System.out.println("chunksize = " + chunkSize);
 	    			
-	    			while(chunkSize > 0 && tempFileNum >= 0){
-	    				downFOut = new FileOutputStream(new File(System.getProperty("user.dir") + "/" + peerID + "/" + tempFileNum + ".pdf"));
-	    				downBOut = new BufferedOutputStream(downFOut);
+	    			downFOut = new FileOutputStream(new File(System.getProperty("user.dir") + "/" + peerID + "/" + tempFileNum + ".pdf"));
+    				downBOut = new BufferedOutputStream(downFOut);
 	    				
-	    				requestChunks[tempFileNum] = -1;
-	    				
-	    				int currentRead = 0;
-	    				do{
-	    					dBytesRead = downFIn.read(dByteArray, 0, dByteArray.length);
-	    					if (dBytesRead > -1){
-	    						downBOut.write(dByteArray, 0, dBytesRead);
-	    						currentRead += dBytesRead;
-	    						downBOut.flush();
-	    					}
-	    				}while(currentRead < chunkSize);
-	    				System.out.println("Read " + currentRead + " bytes from Download Neighbor");
-	    				downloadedChunks++;
-	    				System.out.println("Total files downloaded so far: " + downloadedChunks);
-	    				tempFileNum = downDataIn.readInt();
-	    			}
-	    			System.out.println("File transfer completed!");
+	    			requestChunks[tempFileNum] = -1;
+
+	    			int currentRead = 0;
+
+	    			do{
+	    				dBytesRead = downFIn.read(dByteArray, 0, dByteArray.length);
+	    				if (dBytesRead > -1){
+	    					downBOut.write(dByteArray, 0, dBytesRead);
+	    					currentRead += dBytesRead;
+	    					downBOut.flush();
+	    				}
+	    			}while(currentRead < chunkSize);
+	    			
+	    			downloadedChunks++;
+	    			
+	    			tempFileNum = downDataIn.readInt();
 	            }
 	            if(downloadedChunks == numChunks){
 	            	this.stop();
@@ -108,13 +100,11 @@ public class Client2 implements Runnable{
 	        }
 	        if(downloadNeighbourSocket != null){
 				downloadNeighbourSocket.close();
-			}
+			}*/
         }
-		catch(Exception e)
-		{
+		catch(Exception e){
 			e.printStackTrace();
 		}
-        System.out.println("Server Stopped.") ;
 	}
 	
 	public void getServerChunks() throws UnknownHostException, IOException{
@@ -157,29 +147,30 @@ public class Client2 implements Runnable{
 			int chunkSize = 0;
 
 			chunkSize = dInStream.readInt();
-			System.out.println("chunksize = " + chunkSize);
 			
 			while(chunkSize > 0){
 				fOutStream = new FileOutputStream(new File(System.getProperty("user.dir") + "/" + peerID + "/" + tempFileNum + ".pdf"));
 				bOutStream = new BufferedOutputStream(fOutStream);
-				
-				requestChunks[tempFileNum] = -1;
-				
+								
 				int currentRead = 0;
+				
+				System.out.println("chunkSize for " + tempFileNum + " is: " + chunkSize);
+				
 				do{
-					bytesRead = finStream.read(byteArray, 0, byteArray.length);
+					bytesRead = dInStream.read(byteArray, 0, byteArray.length);
 					if (bytesRead > -1){
 						bOutStream.write(byteArray, 0, bytesRead);
 						currentRead += bytesRead;
 						bOutStream.flush();
 					}
 				}while(currentRead < chunkSize);
-				System.out.println("Read " + currentRead + " bytes from Server");
+				
+				requestChunks[tempFileNum] = -1;
 				tempFileNum += 2;
 				downloadedChunks++;
 				chunkSize = dInStream.readInt();
+				System.out.println("chunkSizeRead : " + chunkSize);			
 			}
-			System.out.println("File transfer completed!");
 		}
 		catch(Exception e)
 		{
@@ -201,26 +192,49 @@ public class Client2 implements Runnable{
 		}
 		
 	}
-	private void openPeerServerSocket()
-	{
-		System.out.println("In peer server socket!!");
-        try {
-            this.serverSocket = new ServerSocket(this.serverPort);
-        } catch (IOException e) {
-            throw new RuntimeException("Cannot open server port for peer1"+this.serverPort, e);
-        }
-    }
+	
 	private synchronized boolean isStopped(){
 	        return this.isStopped;
 	}
+	
 	public synchronized void stop(){
         this.isStopped = true;
-        try {
-            this.serverSocket.close();
-        } catch (IOException e) {
-            throw new RuntimeException("Error closing peer "+this.serverPort, e);
+        try{
+        	mergeFiles(numChunks);
+        } catch(Exception e){
+        	e.printStackTrace();
         }
     }
+	
+	public void mergeFiles(int numChunks) throws IOException{
+		FileInputStream inReaderStream = null;
+		FileOutputStream outReaderStream = null;
+		BufferedInputStream bInReaderStream = null;
+		int bytesRead = 0;
+		byte[] byteArray = new byte[FILE_SIZE];
+		
+		try {
+			outReaderStream = new FileOutputStream(new File(System.getProperty("user.dir") + "/" + peerID + "/" + "/CombinedFile.mp3"));
+			
+			for(int i = 0; i < numChunks; i++){
+				inReaderStream = new FileInputStream(new File(System.getProperty("user.dir") + "/" + peerID + "/" + i + ".pdf"));
+				bInReaderStream = new BufferedInputStream(inReaderStream);
+				bytesRead = bInReaderStream.read(byteArray, 0, byteArray.length);
+				
+				outReaderStream.write(byteArray, 0, bytesRead);
+				outReaderStream.flush();
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} finally{
+			if(inReaderStream != null){
+				inReaderStream.close();
+			}
+			if(outReaderStream != null){
+				outReaderStream.close();
+			}
+		}
+	}
 	
 	public static void main(String args[]) throws UnknownHostException, IOException{
 		Client2 peer = new Client2(peerID);
@@ -231,7 +245,7 @@ public class Client2 implements Runnable{
 		    e.printStackTrace();
 		}
 		
-		System.out.println("Stopping Peer1");
+		System.out.println("Stopping Peer2");
 		peer.stop();
 	}
 }

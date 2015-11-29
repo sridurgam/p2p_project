@@ -45,28 +45,26 @@ public class WorkerRunnable implements Runnable{
 	    			    		
 	    		for(int i=ID; i<ChunkNum; i = i + 2){
 	    			File fileChunk = new File("chunk"+i+".pdf");
-	    			System.out.println(fileChunk.length());
+	    			
 	    			dOutStream.writeInt((int)fileChunk.length());
+					dOutStream.flush();
 	    			
 		        	byte [] byteArray = new byte[(int)fileChunk.length()];
-		        	System.out.println("Chunk "+i+" "+fileChunk.length());
 		        	
 					fInStream = new FileInputStream(fileChunk);
 					bInStream = new BufferedInputStream(fInStream);
 					int bytesRead = bInStream.read(byteArray, 0, byteArray.length);
-					fOutStream = (FileOutputStream)outStream;
-					System.out.println("Sending chunk "+i);
+					//fOutStream = (FileOutputStream)outStream;
 					
 					if(bytesRead != -1){
-						fOutStream.write(byteArray, 0, bytesRead);
-						fOutStream.flush();
+						System.out.println("Bytes read before writing to client "+bytesRead);
+						dOutStream.write(byteArray, 0, bytesRead);
+						dOutStream.flush();
 					}
-					
-					System.out.println("Chunk transfer completed for "+"Chunk "+i);
-					System.out.println("Transferred " + fileChunk.length() + " bytes for chunk "+i);
-	    		}
-	    		System.out.println("Exited Loop");
-	    		dOutStream.writeInt(0);
+					System.out.println("Size of chunk " + i + " is " + (int)fileChunk.length() + ", peer is " + ID);
+				}
+	    		dOutStream.writeInt(-100);
+	    		dOutStream.flush();
 	        } finally {
 				if (bInStream!=null){
 					bInStream.close();

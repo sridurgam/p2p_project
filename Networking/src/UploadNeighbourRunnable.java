@@ -42,8 +42,8 @@ public class UploadNeighbourRunnable implements Runnable{
 	
 	public void transferChunks(int length_array,int[] request_chunks) throws FileNotFoundException,IOException{
 		for(int i=0;i<length_array;i++){
-			System.out.println(System.getProperty("user.dir") + "/" + peerId+ "/" + request_chunks[i]+".pdf");
-			File fileChunk = new File(System.getProperty("user.dir") + "/" + peerId + "/" + request_chunks[i]+".pdf");
+			System.out.println(System.getProperty("user.dir") + "/src/" + peerId+ "/" + request_chunks[i]+".pdf");
+			File fileChunk = new File(System.getProperty("user.dir") + "/src/" + peerId + "/" + request_chunks[i]+".pdf");
 			if(fileChunk.exists() && !fileChunk.isDirectory()){ 
 				byte [] byteArray = new byte[(int)fileChunk.length()];
 				
