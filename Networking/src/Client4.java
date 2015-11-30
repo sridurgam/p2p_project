@@ -52,29 +52,32 @@ public class Client4 implements Runnable{
             
             InputStream downIn = downloadNeighbourSocket.getInputStream();
             DataInputStream downDataIn = new DataInputStream(downIn);
-	        
+        	
             int request;
             request = numChunks - downloadedChunks;
             System.out.println(request);
             downDataOut.writeInt(request);
-
+            
 	        while(!isStopped()){
-	            for(int i = 0; i < numChunks; i++) {
+	        	System.out.print("Requesting chunks " );
+	        	for(int i = 0; i < numChunks; i++) {
 	            	if(requestChunks[i] != -1){
 	            		downDataOut.writeInt(i);
+	            		System.out.print(requestChunks[i] + " "); 
 	            	}
 	            }
 
+	            System.out.print(" from downloadNeighbour \n");
 	            int tempFileNum = downDataIn.readInt();
 	            int dBytesRead = 0;
-	            byte[] dByteArray = new byte[FILE_SIZE];
+	           // byte[] dByteArray = new byte[FILE_SIZE];
 	            FileInputStream downFIn = (FileInputStream)downIn;
 	            FileOutputStream downFOut;
 				BufferedOutputStream downBOut;
 				
 	            while(tempFileNum >= 0) {
 	    			int chunkSize = downDataIn.readInt();
-	    			
+	    			byte[] dByteArray = new byte[chunkSize];
 	    			downFOut = new FileOutputStream(new File(System.getProperty("user.dir") + "/" + peerID + "/" + tempFileNum + ".pdf"));
     				downBOut = new BufferedOutputStream(downFOut);
 	    				
@@ -90,7 +93,7 @@ public class Client4 implements Runnable{
 	    					downBOut.flush();
 	    				}
 	    			}while(currentRead < chunkSize);
-	    			
+	    			System.out.println("Downloaded chunk " + tempFileNum + " from download Neighbour");
 	    			downloadedChunks++;
 	    			
 	    			try
@@ -142,7 +145,7 @@ public class Client4 implements Runnable{
 			numChunks = dInStream.readInt();
 			upNeighbor = dInStream.readInt();
 			downNeighbor = dInStream.readInt();
-			
+			System.out.println("Size of total chunks "+numChunks);
 			requestChunks = new int[numChunks];
 			for (int i = 0; i < numChunks; i++){
 				requestChunks[i] = i;
@@ -160,9 +163,7 @@ public class Client4 implements Runnable{
 				bOutStream = new BufferedOutputStream(fOutStream);
 								
 				int currentRead = 0;
-				
-				System.out.println("chunkSize for " + tempFileNum + " is: " + chunkSize);
-				
+								
 				do{
 					bytesRead = dInStream.read(byteArray, 0, byteArray.length);
 					if (bytesRead > -1){
@@ -173,7 +174,7 @@ public class Client4 implements Runnable{
 				}while(currentRead < chunkSize);
 				
 				requestChunks[tempFileNum] = -1;
-				tempFileNum += 5;
+				tempFileNum += 4;
 				downloadedChunks++;
 				try
 				{
@@ -181,10 +182,17 @@ public class Client4 implements Runnable{
 				}
 				catch(Exception e){
 					chunkSize=-1;
-					System.out.println("chunkSizeRead : " + chunkSize);			
+					System.out.println("chunksize = " + chunkSize);
 				}
 				System.out.println("Downloaded chunk" + tempFileNum + " from Server");
 				System.out.println("Downloaded " + downloadedChunks + "/" + numChunks + " chunks");
+				
+				if (bOutStream != null){
+					bOutStream.close();
+				}
+				if (fOutStream != null){
+					fOutStream.close();
+				}
 			}
 		}
 		catch(Exception e)
@@ -192,17 +200,11 @@ public class Client4 implements Runnable{
 			e.printStackTrace();
 		}
 		finally{
-			if (bOutStream != null){
-				bOutStream.close();
-			}
-			if (fOutStream != null){
-				fOutStream.close();
+			if (inStream != null){
+				inStream.close();
 			}
 			if (socket != null){
 				socket.close();
-			}
-			if (inStream != null){
-				inStream.close();
 			}
 		}
 		
@@ -214,6 +216,7 @@ public class Client4 implements Runnable{
 	
 	public synchronized void stop(){
         this.isStopped = true;
+        System.out.println("Download completed. Merging Files...");
         try{
         	mergeFiles(numChunks);
         } catch(Exception e){
@@ -238,13 +241,16 @@ public class Client4 implements Runnable{
 				
 				outReaderStream.write(byteArray, 0, bytesRead);
 				outReaderStream.flush();
+				if(inReaderStream != null){
+					inReaderStream.close();
+				}
+				if(bInReaderStream != null){
+					bInReaderStream.close();
+				}
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} finally{
-			if(inReaderStream != null){
-				inReaderStream.close();
-			}
 			if(outReaderStream != null){
 				outReaderStream.close();
 			}

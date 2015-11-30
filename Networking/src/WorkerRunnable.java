@@ -43,7 +43,7 @@ public class WorkerRunnable implements Runnable{
 	    		dOutStream.writeInt(Neighbors[ID][0]);
 	    		dOutStream.writeInt(Neighbors[ID][1]);
 	    			    		
-	    		for(int i=ID; i<ChunkNum; i = i + 5){
+	    		for(int i=ID; i<ChunkNum; i = i + 3){
 	    			File fileChunk = new File("chunk"+i+".pdf");
 	    			
 	    			dOutStream.writeInt((int)fileChunk.length());
@@ -62,24 +62,25 @@ public class WorkerRunnable implements Runnable{
 						dOutStream.flush();
 					}
 					System.out.println("Size of chunk " + i + " is " + (int)fileChunk.length() + ", peer is " + ID);
+					
+					if (bInStream!=null){
+						bInStream.close();
+					}
+					if (fInStream!=null){
+						fInStream.close();
+					}
 				}
 	    		dOutStream.writeInt(-100);
 	    		dOutStream.flush();
 	        } finally {
-				if (bInStream!=null){
-					bInStream.close();
-				}
-				if (fInStream!=null){
-					fInStream.close();
-				}
 				if (outStream!=null){
 					outStream.close();
 				}
-				if (serverSocket != null){
-					serverSocket.close();
-				}
 				if (inStream != null){
 					inStream.close();
+				}
+				if (serverSocket != null){
+					serverSocket.close();
 				}
 			}
         } catch (Exception e){

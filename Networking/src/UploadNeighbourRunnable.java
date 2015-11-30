@@ -36,7 +36,7 @@ public class UploadNeighbourRunnable implements Runnable{
         try {
             this.sSocket = new ServerSocket(this.peerId);
         } catch (IOException e) {
-            throw new RuntimeException("Cannot open server port for peer1"+this.peerId, e);
+            throw new RuntimeException("Cannot open server port for peer"+this.peerId, e);
         }
     }
 	
@@ -64,7 +64,12 @@ public class UploadNeighbourRunnable implements Runnable{
 				
 //				System.out.println("Chunk transfer completed for "+"Chunk "+i+" for peer "+this.peerId);
 				transferred_chunks++;
-				System.out.println("Transferred " + fileChunk.length() + " bytes for chunk "+request_chunks[i]+" for "+this.peerId);	
+				System.out.println("Transferred " + fileChunk.length() + " bytes for chunk "+request_chunks[i]+" for "+this.peerId);
+				if(fInStream != null){
+					fInStream.close();
+				} if (bInStream != null){
+					bInStream.close();
+				}
 			}
 		}
 		dOutStream.writeInt(-1);
@@ -117,20 +122,14 @@ public class UploadNeighbourRunnable implements Runnable{
 	    		if (dOutStream!=null){
 					dOutStream.close();
 				}
-				if (bInStream!=null){
-					bInStream.close();
-				}
-				if (fInStream!=null){
-					fInStream.close();
-				}
 				if (fOutStream!=null){
 					fOutStream.close();
 				}
-				if (serverSocket != null){
-					serverSocket.close();
-				}
 				if (inStream != null){
 					inStream.close();
+				}
+				if (serverSocket != null){
+					serverSocket.close();
 				}
 			}
     	}

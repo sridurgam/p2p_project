@@ -67,14 +67,14 @@ public class Client3 implements Runnable{
 
 	            int tempFileNum = downDataIn.readInt();
 	            int dBytesRead = 0;
-	            byte[] dByteArray = new byte[FILE_SIZE];
+	         //   byte[] dByteArray = new byte[FILE_SIZE];
 	            FileInputStream downFIn = (FileInputStream)downIn;
 	            FileOutputStream downFOut;
 				BufferedOutputStream downBOut;
 				
 	            while(tempFileNum >= 0) {
 	    			int chunkSize = downDataIn.readInt();
-	    			
+	    			byte[] dByteArray = new byte[chunkSize];
 	    			downFOut = new FileOutputStream(new File(System.getProperty("user.dir") + "/" + peerID + "/" + tempFileNum + ".pdf"));
     				downBOut = new BufferedOutputStream(downFOut);
 	    				
@@ -173,7 +173,7 @@ public class Client3 implements Runnable{
 				}while(currentRead < chunkSize);
 				
 				requestChunks[tempFileNum] = -1;
-				tempFileNum += 5;
+				tempFileNum += 3;
 				downloadedChunks++;
 				try{
 					chunkSize = dInStream.readInt();
@@ -184,6 +184,12 @@ public class Client3 implements Runnable{
 				}
 				System.out.println("Downloaded chunk" + tempFileNum + " from Server");
 				System.out.println("Downloaded " + downloadedChunks + "/" + numChunks + " chunks");
+				if (bOutStream != null){
+					bOutStream.close();
+				}
+				if (fOutStream != null){
+					fOutStream.close();
+				}
 			}
 		}
 		catch(Exception e)
@@ -197,11 +203,11 @@ public class Client3 implements Runnable{
 			if (fOutStream != null){
 				fOutStream.close();
 			}
-			if (socket != null){
-				socket.close();
-			}
 			if (inStream != null){
 				inStream.close();
+			}
+			if (socket != null){
+				socket.close();
 			}
 		}
 		
@@ -237,13 +243,15 @@ public class Client3 implements Runnable{
 				
 				outReaderStream.write(byteArray, 0, bytesRead);
 				outReaderStream.flush();
+				if(inReaderStream != null){
+					inReaderStream.close();
+				} if(bInReaderStream != null){
+					bInReaderStream.close();
+				}
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} finally{
-			if(inReaderStream != null){
-				inReaderStream.close();
-			}
 			if(outReaderStream != null){
 				outReaderStream.close();
 			}
